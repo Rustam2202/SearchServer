@@ -1,12 +1,14 @@
 #include "test_example_functions.h"
 
 int main() {
-
-	BeginEndTest();
+	ProcessQueriesTest();
+	/*BeginEndTest();
 	GetWordFreqTest();
 	RemoveDocTest();
 	RemoveDuplicatTest();
-	PaginatorTest();
+	PaginatorTest();*/
 
 	return 0;
 }
+
+

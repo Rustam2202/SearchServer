@@ -32,6 +32,7 @@
     <ClInclude Include="document.h" />
     <ClInclude Include="log_duration.h" />
     <ClInclude Include="paginator.h" />
+    <ClInclude Include="process_queries.h" />
     <ClInclude Include="read_input_functions.h" />
     <ClInclude Include="remove_duplicates.h" />
     <ClInclude Include="request_queue.h" />

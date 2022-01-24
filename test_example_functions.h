@@ -1,9 +1,11 @@
 #pragma once
 
 #include "remove_duplicates.h"
-#include "search_server.h"
+//#include "search_server.h"
 
 SearchServer CreateSearchServObject();
+
+void ProcessQueriesTest();
 
 void BeginEndTest();
 void GetWordFreqTest();

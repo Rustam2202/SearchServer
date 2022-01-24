@@ -68,5 +68,8 @@
     <ClInclude Include="test_example_functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="process_queries.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
