@@ -2,6 +2,8 @@
 
 int main() {
 	ProcessQueriesTest();
+	ProcessQueriesSpeedTest();
+
 	/*BeginEndTest();
 	GetWordFreqTest();
 	RemoveDocTest();
