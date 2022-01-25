@@ -1,7 +1,10 @@
 #include "test_example_functions.h"
 
+#include <string>
+
 int main() {
-	ProcessQueriesTest();
+	using namespace std;
+	//ProcessQueriesTest();
 	ProcessQueriesSpeedTest();
 
 	/*BeginEndTest();

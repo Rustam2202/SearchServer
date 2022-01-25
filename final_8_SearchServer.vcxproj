@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="document.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="process_queries.cpp" />
     <ClCompile Include="read_input_functions.cpp" />
     <ClCompile Include="remove_duplicates.cpp" />
     <ClCompile Include="request_queue.cpp" />
@@ -140,6 +141,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -154,6 +156,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
