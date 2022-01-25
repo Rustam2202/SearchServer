@@ -5,6 +5,8 @@
 
 SearchServer CreateSearchServObject();
 
+void RemoveDocumentExecutTest();
+
 void ProcessQueriesTest();
 void ProcessQueriesSpeedTest();
 

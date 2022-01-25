@@ -1,6 +1,8 @@
-#include <algorithm>
-
 #include "search_server.h"
+
+#include <algorithm>
+#include <execution>
+
 
 void SearchServer::AddDocument(int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings) {
 	if ((document_id < 0) || (documents_.count(document_id) > 0)) {
@@ -85,6 +87,26 @@ SearchServer::Query SearchServer::ParseQuery(const std::string& text) const {
 }
 
 // O(W log N), где W — количество слов в удаляемом документе
+//void SearchServer::RemoveDocument(int document_id) {
+//	if (!std::binary_search(document_ids_.begin(), document_ids_.end(), document_id)) {
+//		return;
+//	}
+//
+//	for (auto& docs_freqs : word_to_document_freqs_) {
+//		docs_freqs.second.erase(document_id);
+//	}
+//
+//	id_to_word_freqs_.erase(document_id);
+//	documents_.erase(document_id);
+//	document_ids_.erase(document_id);
+//}
+
+//enum execution_mode
+//{
+//	par{ "std::execution::par"s }
+//
+//};
+
 void SearchServer::RemoveDocument(int document_id) {
 	if (!std::binary_search(document_ids_.begin(), document_ids_.end(), document_id)) {
 		return;
