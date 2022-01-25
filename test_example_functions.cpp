@@ -26,34 +26,6 @@ SearchServer CreateSearchServObject() {
 	return search_server;
 }
 
-void ProcessQueriesTest() {
-	using namespace std;
-
-	SearchServer search_server("and with"s);
-
-	int id = 0;
-	for (const string& text : {
-			"funny pet and nasty rat"s,
-			"funny pet with curly hair"s,
-			"funny pet and not very nasty rat"s,
-			"pet with rat and rat and rat"s,
-			"nasty rat with curly hair"s,
-		}
-		) {
-		search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, { 1, 2 });
-	}
-
-	const vector<string> queries = {
-		"nasty rat -not"s,
-		"not very funny nasty pet"s,
-		"curly hair"s
-	};
-
-	id = 0;
-	for (const auto& documents : ProcessQueries(search_server, queries)) {
-		cout << documents.size() << " documents for query ["s << queries[id++] << "]"s << endl;
-	}
-}
 
 using namespace std;
 
@@ -110,9 +82,37 @@ void Test(string_view mark, QueriesProcessor processor, const SearchServer& sear
 	const auto documents_lists = processor(search_server, queries);
 }
 
+void ProcessQueriesTest() {
+	using namespace std;
+
+	SearchServer search_server("and with"s);
+
+	int id = 0;
+	for (const string& text : {
+			"funny pet and nasty rat"s,
+			"funny pet with curly hair"s,
+			"funny pet and not very nasty rat"s,
+			"pet with rat and rat and rat"s,
+			"nasty rat with curly hair"s,
+		}
+		) {
+		search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, { 1, 2 });
+	}
+
+	const vector<string> queries = {
+		"nasty rat -not"s,
+		"not very funny nasty pet"s,
+		"curly hair"s
+	};
+
+	id = 0;
+	for (const auto& documents : ProcessQueries(search_server, queries)) {
+		cout << documents.size() << " documents for query ["s << queries[id++] << "]"s << endl;
+	}
+}
 
 void ProcessQueriesSpeedTest() {
-	
+
 #define TEST(processor) Test(#processor, processor, search_server, queries)
 
 	//int main() 
@@ -130,6 +130,63 @@ void ProcessQueriesSpeedTest() {
 		TEST(ProcessQueries);
 	}
 }
+
+void ProcessQueriesJoinedTest() {
+	SearchServer search_server("and with"s);
+
+	int id = 0;
+	for (
+		const string& text : {
+			"funny pet and nasty rat"s,
+			"funny pet with curly hair"s,
+			"funny pet and not very nasty rat"s,
+			"pet with rat and rat and rat"s,
+			"nasty rat with curly hair"s,
+		}
+		) {
+		search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, { 1, 2 });
+	}
+
+	const vector<string> queries = {
+		"nasty rat -not"s,
+		"not very funny nasty pet"s,
+		"curly hair"s
+	};
+
+	//auto a= search_server.FindTopDocuments(queries[0]);
+
+	for (const Document& document : ProcessQueriesJoined(search_server, queries)) {
+		cout << "Document "s << document.id << " matched with relevance "s << document.relevance << endl;
+	}
+
+	/*
+		Document 1 matched with relevance 0.183492
+		Document 5 matched with relevance 0.183492
+		Document 4 matched with relevance 0.167358
+		Document 3 matched with relevance 0.743945
+		Document 1 matched with relevance 0.311199
+		Document 2 matched with relevance 0.183492
+		Document 5 matched with relevance 0.127706
+		Document 4 matched with relevance 0.0557859
+		Document 2 matched with relevance 0.458145
+		Document 5 matched with relevance 0.458145
+	*/
+}
+
+void ProcessQueriesJoinedSpeedTest() {
+	mt19937 generator;
+	const auto dictionary = GenerateDictionary(generator, 10000, 25);
+	const auto documents = GenerateQueries(generator, dictionary, 100'000, 10);
+
+	SearchServer search_server(dictionary[0]);
+	for (size_t i = 0; i < documents.size(); ++i) {
+		search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, { 1, 2, 3 });
+	}
+
+	const auto queries = GenerateQueries(generator, dictionary, 10'000, 7);
+	TEST(ProcessQueriesJoined);
+}
+
 
 void BeginEndTest() {
 	using namespace std;

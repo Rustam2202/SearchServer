@@ -8,6 +8,9 @@ SearchServer CreateSearchServObject();
 void ProcessQueriesTest();
 void ProcessQueriesSpeedTest();
 
+void ProcessQueriesJoinedTest();
+void ProcessQueriesJoinedSpeedTest();
+
 void BeginEndTest();
 void GetWordFreqTest();
 void RemoveDocTest();

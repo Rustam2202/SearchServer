@@ -14,3 +14,16 @@ std::vector<std::vector<Document>> ProcessQueries(const SearchServer& search_ser
 
 	return result;
 }
+
+std::vector<Document> ProcessQueriesJoined(const SearchServer& search_server, const std::vector<std::string>& queries) {
+	std::vector<Document> result;
+	std::string queries_all;
+
+	
+
+		for (auto doc : search_server.FindTopDocuments(std::move())) {
+			result.push_back(std::move(doc));
+		}
+	
+	return result;
+}
