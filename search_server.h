@@ -41,6 +41,8 @@ public:
 	}
 
 	std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string& raw_query, int document_id) const;
+	std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(std::execution::sequenced_policy, const std::string& raw_query, int document_id) const;
+	std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(std::execution::parallel_policy, const std::string& raw_query, int document_id) const;
 
 	int GetDocumentCount() const {
 		return documents_.size();
