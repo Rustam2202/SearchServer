@@ -9,10 +9,11 @@ int main() {
 	//ProcessQueriesTest();
 	//ProcessQueriesSpeedTest();
 
-	ProcessQueriesJoinedTest();
-	ProcessQueriesJoinedSpeedTest();
+//	ProcessQueriesJoinedTest();
+//	ProcessQueriesJoinedSpeedTest();
 
-	RemoveDocumentExecutTest();
+	//RemoveDocumentExecutTest();
+	RemoveDocumentExecutSpeedTest();
 
 	/*BeginEndTest();
 	GetWordFreqTest();

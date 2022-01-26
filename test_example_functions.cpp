@@ -5,6 +5,7 @@
 #include "test_example_functions.h"
 
 #include <iostream>
+#include <execution>
 #include <random>
 #include <string>
 #include <vector>
@@ -37,9 +38,6 @@ string GenerateWord(mt19937& generator, int max_length) {
 	word.reserve(length);
 	for (int i = 0; i < length; ++i) {
 		word.push_back(uniform_int_distribution((int)'a', (int)'z')(generator));
-
-		//uniform_int_distribution((int)'a',(int) 'z')(generator);
-		//word.push_back(uniform_int_distribution('a', 'z')(generator));
 	}
 	return word;
 }
@@ -187,7 +185,21 @@ void ProcessQueriesJoinedSpeedTest() {
 	TEST(ProcessQueriesJoined);
 }
 
+template <typename ExecutionPolicy>
+void Test(string_view mark, SearchServer search_server, ExecutionPolicy&& policy) {
+	LOG_DURATION("mark");
+	const int document_count = search_server.GetDocumentCount();
+	/*for (int id = 0; id < document_count; ++id) {
+		search_server.RemoveDocument(policy, id);
+	}*/
+	search_server.RemoveDocument(policy, 453);
+
+	cout << search_server.GetDocumentCount() << endl;
+}
+
 void RemoveDocumentExecutTest() {
+	using namespace std;
+
 	SearchServer search_server("and with"s);
 
 	int id = 0;
@@ -215,11 +227,28 @@ void RemoveDocumentExecutTest() {
 	search_server.RemoveDocument(5);
 	report();
 	// однопоточная версия
-	//search_server.RemoveDocument(execution::seq, 1);
-	//report();
-	//// многопоточная версия
-	//search_server.RemoveDocument(execution::par, 2);
-	//report();
+	search_server.RemoveDocument(execution::seq, 1);
+	report();
+	// многопоточная версия
+	search_server.RemoveDocument(execution::par, 2);
+	report();
+}
+
+void RemoveDocumentExecutSpeedTest() {
+#define TEST(mode) Test(#mode, search_server, execution::mode)
+
+	mt19937 generator;
+
+	const auto dictionary = GenerateDictionary(generator, 10000, 25);
+	const auto documents = GenerateQueries(generator, dictionary, 10'000, 100);
+
+	SearchServer search_server(dictionary[0]);
+	for (size_t i = 0; i < documents.size(); ++i) {
+		search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, { 1, 2, 3 });
+	}
+
+	TEST(seq);
+	TEST(par);
 }
 
 void BeginEndTest() {

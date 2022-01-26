@@ -1,6 +1,7 @@
 #include "search_server.h"
 
 #include <algorithm>
+#include <iterator>
 #include <execution>
 
 
@@ -86,27 +87,6 @@ SearchServer::Query SearchServer::ParseQuery(const std::string& text) const {
 	return result;
 }
 
-// O(W log N), где W — количество слов в удаляемом документе
-//void SearchServer::RemoveDocument(int document_id) {
-//	if (!std::binary_search(document_ids_.begin(), document_ids_.end(), document_id)) {
-//		return;
-//	}
-//
-//	for (auto& docs_freqs : word_to_document_freqs_) {
-//		docs_freqs.second.erase(document_id);
-//	}
-//
-//	id_to_word_freqs_.erase(document_id);
-//	documents_.erase(document_id);
-//	document_ids_.erase(document_id);
-//}
-
-//enum execution_mode
-//{
-//	par{ "std::execution::par"s }
-//
-//};
-
 void SearchServer::RemoveDocument(int document_id) {
 	if (!std::binary_search(document_ids_.begin(), document_ids_.end(), document_id)) {
 		return;
@@ -115,6 +95,39 @@ void SearchServer::RemoveDocument(int document_id) {
 	for (auto& docs_freqs : word_to_document_freqs_) {
 		docs_freqs.second.erase(document_id);
 	}
+
+	id_to_word_freqs_.erase(document_id);
+	documents_.erase(document_id);
+	document_ids_.erase(document_id);
+}
+
+void SearchServer::RemoveDocument(std::execution::sequenced_policy, int document_id) {
+	if (!std::binary_search(document_ids_.begin(), document_ids_.end(), document_id)) {
+		return;
+	}
+
+	std::for_each(std::execution::seq, word_to_document_freqs_.begin(), word_to_document_freqs_.end(),
+		[document_id](auto& docs_freqs) {
+			docs_freqs.second.erase(document_id);
+		}
+	);
+
+	id_to_word_freqs_.erase(document_id);
+	documents_.erase(document_id);
+	document_ids_.erase(document_id);
+}
+
+void SearchServer::RemoveDocument(std::execution::parallel_policy, int document_id) {
+
+	if (!std::binary_search(document_ids_.begin(), document_ids_.end(), document_id)) {
+		return;
+	}
+
+	std::for_each(std::execution::par, word_to_document_freqs_.begin(), word_to_document_freqs_.end(),
+		[document_id](auto& docs_freqs) {
+			docs_freqs.second.erase(document_id);
+		}
+	);
 
 	id_to_word_freqs_.erase(document_id);
 	documents_.erase(document_id);

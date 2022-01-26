@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <execution>
 #include <map>
 #include <set>
 #include <stdexcept>
@@ -62,6 +63,9 @@ public:
 	}
 
 	void RemoveDocument(int document_id);
+	void RemoveDocument(std::execution::sequenced_policy, int document_id);
+	void RemoveDocument(std::execution::parallel_policy, int document_id);
+
 
 private:
 	struct DocumentData {
