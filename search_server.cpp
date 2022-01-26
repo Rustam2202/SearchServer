@@ -154,11 +154,11 @@ void SearchServer::RemoveDocument(std::execution::sequenced_policy, int document
 		return;
 	}
 
-	std::for_each(std::execution::seq, word_to_document_freqs_.begin(), word_to_document_freqs_.end(),
+	/*std::for_each(std::execution::seq, word_to_document_freqs_.begin(), word_to_document_freqs_.end(),
 		[document_id](auto& docs_freqs) {
 			docs_freqs.second.erase(document_id);
 		}
-	);
+	);*/
 
 	id_to_word_freqs_.erase(document_id);
 	documents_.erase(document_id);

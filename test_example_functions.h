@@ -6,7 +6,7 @@
 //SearchServer CreateSearchServObject();
 
 //void RemoveDocumentExecutTest();
-//void RemoveDocumentExecutSpeedTest();
+void RemoveDocumentExecutSpeedTest();
 //
 //
 //void ProcessQueriesTest();

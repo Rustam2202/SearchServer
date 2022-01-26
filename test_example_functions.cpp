@@ -10,9 +10,6 @@
 #include <string>
 #include <vector>
 
-
-
-
 using namespace std;
 
 string GenerateWord(mt19937& generator, int max_length) {
@@ -38,26 +35,40 @@ vector<string> GenerateDictionary(mt19937& generator, int word_count, int max_le
 	return words;
 }
 
-//string GenerateQuery(mt19937& generator, const vector<string>& dictionary, int max_word_count) {
-//	const int word_count = uniform_int_distribution(1, max_word_count)(generator);
-//	string query;
-//	for (int i = 0; i < word_count; ++i) {
-//		if (!query.empty()) {
-//			query.push_back(' ');
-//		}
-//		query += dictionary[uniform_int_distribution<int>(0, dictionary.size() - 1)(generator)];
-//	}
-//	return query;
-//}
+string GenerateQuery(mt19937& generator, const vector<string>& dictionary, int max_word_count) {
+	const int word_count = uniform_int_distribution(1, max_word_count)(generator);
+	string query;
+	for (int i = 0; i < word_count; ++i) {
+		if (!query.empty()) {
+			query.push_back(' ');
+		}
+		query += dictionary[uniform_int_distribution<int>(0, dictionary.size() - 1)(generator)];
+	}
+	return query;
+}
 
-//vector<string> GenerateQueries(mt19937& generator, const vector<string>& dictionary, int query_count, int max_word_count) {
-//	vector<string> queries;
-//	queries.reserve(query_count);
-//	for (int i = 0; i < query_count; ++i) {
-//		queries.push_back(GenerateQuery(generator, dictionary, max_word_count));
-//	}
-//	return queries;
-//}
+string GenerateQueryDouble(mt19937& generator, const vector<string>& dictionary, int word_count, double minus_prob = 0) {
+	string query;
+	for (int i = 0; i < word_count; ++i) {
+		if (!query.empty()) {
+			query.push_back(' ');
+		}
+		if (uniform_real_distribution<>(0, 1)(generator) < minus_prob) {
+			query.push_back('-');
+		}
+		query += dictionary[uniform_int_distribution<int>(0, dictionary.size() - 1)(generator)];
+	}
+	return query;
+}
+
+vector<string> GenerateQueries(mt19937& generator, const vector<string>& dictionary, int query_count, int max_word_count) {
+	vector<string> queries;
+	queries.reserve(query_count);
+	for (int i = 0; i < query_count; ++i) {
+		queries.push_back(GenerateQuery(generator, dictionary, max_word_count));
+	}
+	return queries;
+}
 
 template <typename QueriesProcessor>
 void Test(string_view mark, QueriesProcessor processor, const SearchServer& search_server, const vector<string>& queries) {
@@ -94,148 +105,147 @@ void ProcessQueriesTest() {
 	}
 }
 
+void ProcessQueriesSpeedTest() {
 
-//void ProcessQueriesSpeedTest() {
-//
-//#define TEST(processor) Test(#processor, processor, search_server, queries)
-//
-//	//int main() 
-//	{
-//		mt19937 generator;
-//		const auto dictionary = GenerateDictionary(generator, 10000, 25);
-//		const auto documents = GenerateQueries(generator, dictionary, 100'000, 10);
-//
-//		SearchServer search_server(dictionary[0]);
-//		for (size_t i = 0; i < documents.size(); ++i) {
-//			search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, { 1, 2, 3 });
-//		}
-//
-//		const auto queries = GenerateQueries(generator, dictionary, 10'000, 7);
-//		TEST(ProcessQueries);
-//	}
-//}
-//
-//void ProcessQueriesJoinedTest() {
-//	SearchServer search_server("and with"s);
-//
-//	int id = 0;
-//	for (
-//		const string& text : {
-//			"funny pet and nasty rat"s,
-//			"funny pet with curly hair"s,
-//			"funny pet and not very nasty rat"s,
-//			"pet with rat and rat and rat"s,
-//			"nasty rat with curly hair"s,
-//		}
-//		) {
-//		search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, { 1, 2 });
-//	}
-//
-//	const vector<string> queries = {
-//		"nasty rat -not"s,
-//		"not very funny nasty pet"s,
-//		"curly hair"s
-//	};
-//
-//	//auto a= search_server.FindTopDocuments(queries[0]);
-//
-//	for (const Document& document : ProcessQueriesJoined(search_server, queries)) {
-//		cout << "Document "s << document.id << " matched with relevance "s << document.relevance << endl;
-//	}
-//
-//	/*
-//		Document 1 matched with relevance 0.183492
-//		Document 5 matched with relevance 0.183492
-//		Document 4 matched with relevance 0.167358
-//		Document 3 matched with relevance 0.743945
-//		Document 1 matched with relevance 0.311199
-//		Document 2 matched with relevance 0.183492
-//		Document 5 matched with relevance 0.127706
-//		Document 4 matched with relevance 0.0557859
-//		Document 2 matched with relevance 0.458145
-//		Document 5 matched with relevance 0.458145
-//	*/
-//}
-//
-//void ProcessQueriesJoinedSpeedTest() {
-//	mt19937 generator;
-//	const auto dictionary = GenerateDictionary(generator, 10000, 25);
-//	const auto documents = GenerateQueries(generator, dictionary, 100'000, 10);
-//
-//	SearchServer search_server(dictionary[0]);
-//	for (size_t i = 0; i < documents.size(); ++i) {
-//		search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, { 1, 2, 3 });
-//	}
-//
-//	const auto queries = GenerateQueries(generator, dictionary, 10'000, 7);
-//	TEST(ProcessQueriesJoined);
-//}
-//
-//template <typename ExecutionPolicy>
-//void Test(string_view mark, SearchServer search_server, ExecutionPolicy&& policy) {
-//	LOG_DURATION("mark");
-//	const int document_count = search_server.GetDocumentCount();
-//	/*for (int id = 0; id < document_count; ++id) {
-//		search_server.RemoveDocument(policy, id);
-//	}*/
-//	search_server.RemoveDocument(policy, 453);
-//
-//	cout << search_server.GetDocumentCount() << endl;
-//}
-//
-//void RemoveDocumentExecutTest() {
-//	using namespace std;
-//
-//	SearchServer search_server("and with"s);
-//
-//	int id = 0;
-//	for (
-//		const string& text : {
-//			"funny pet and nasty rat"s,
-//			"funny pet with curly hair"s,
-//			"funny pet and not very nasty rat"s,
-//			"pet with rat and rat and rat"s,
-//			"nasty rat with curly hair"s,
-//		}
-//		) {
-//		search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, { 1, 2 });
-//	}
-//
-//	const string query = "curly and funny"s;
-//
-//	auto report = [&search_server, &query] {
-//		cout << search_server.GetDocumentCount() << " documents total, "s
-//			<< search_server.FindTopDocuments(query).size() << " documents for query ["s << query << "]"s << endl;
-//	};
-//
-//	report();
-//	// однопоточная версия
-//	search_server.RemoveDocument(5);
-//	report();
-//	// однопоточная версия
-//	search_server.RemoveDocument(execution::seq, 1);
-//	report();
-//	// многопоточная версия
-//	search_server.RemoveDocument(execution::par, 2);
-//	report();
-//}
-//
-//void RemoveDocumentExecutSpeedTest() {
-//#define TEST(mode) Test(#mode, search_server, execution::mode)
-//
-//	mt19937 generator;
-//
-//	const auto dictionary = GenerateDictionary(generator, 10000, 25);
-//	const auto documents = GenerateQueries(generator, dictionary, 10'000, 100);
-//
-//	SearchServer search_server(dictionary[0]);
-//	for (size_t i = 0; i < documents.size(); ++i) {
-//		search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, { 1, 2, 3 });
-//	}
-//
-//	TEST(seq);
-//	TEST(par);
-//}
+#define TEST(processor) Test(#processor, processor, search_server, queries)
+
+	//int main() 
+	{
+		mt19937 generator;
+		const auto dictionary = GenerateDictionary(generator, 10000, 25);
+		const auto documents = GenerateQueries(generator, dictionary, 100'000, 10);
+
+		SearchServer search_server(dictionary[0]);
+		for (size_t i = 0; i < documents.size(); ++i) {
+			search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, { 1, 2, 3 });
+		}
+
+		const auto queries = GenerateQueries(generator, dictionary, 10'000, 7);
+		TEST(ProcessQueries);
+	}
+}
+
+void ProcessQueriesJoinedTest() {
+	SearchServer search_server("and with"s);
+
+	int id = 0;
+	for (
+		const string& text : {
+			"funny pet and nasty rat"s,
+			"funny pet with curly hair"s,
+			"funny pet and not very nasty rat"s,
+			"pet with rat and rat and rat"s,
+			"nasty rat with curly hair"s,
+		}
+		) {
+		search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, { 1, 2 });
+	}
+
+	const vector<string> queries = {
+		"nasty rat -not"s,
+		"not very funny nasty pet"s,
+		"curly hair"s
+	};
+
+	//auto a= search_server.FindTopDocuments(queries[0]);
+
+	for (const Document& document : ProcessQueriesJoined(search_server, queries)) {
+		cout << "Document "s << document.id << " matched with relevance "s << document.relevance << endl;
+	}
+
+	/*
+		Document 1 matched with relevance 0.183492
+		Document 5 matched with relevance 0.183492
+		Document 4 matched with relevance 0.167358
+		Document 3 matched with relevance 0.743945
+		Document 1 matched with relevance 0.311199
+		Document 2 matched with relevance 0.183492
+		Document 5 matched with relevance 0.127706
+		Document 4 matched with relevance 0.0557859
+		Document 2 matched with relevance 0.458145
+		Document 5 matched with relevance 0.458145
+	*/
+}
+
+void ProcessQueriesJoinedSpeedTest() {
+	mt19937 generator;
+	const auto dictionary = GenerateDictionary(generator, 10000, 25);
+	const auto documents = GenerateQueries(generator, dictionary, 100'000, 10);
+
+	SearchServer search_server(dictionary[0]);
+	for (size_t i = 0; i < documents.size(); ++i) {
+		search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, { 1, 2, 3 });
+	}
+
+	const auto queries = GenerateQueries(generator, dictionary, 10'000, 7);
+	TEST(ProcessQueriesJoined);
+}
+
+template <typename ExecutionPolicy>
+void Test(string_view mark, SearchServer search_server, ExecutionPolicy&& policy) {
+	LOG_DURATION("mark");
+	const int document_count = search_server.GetDocumentCount();
+	for (int id = 0; id < document_count; ++id) {
+		search_server.RemoveDocument(policy, id);
+	}
+	//search_server.RemoveDocument(policy, 453);
+
+	cout << search_server.GetDocumentCount() << endl;
+}
+
+void RemoveDocumentExecutTest() {
+	using namespace std;
+
+	SearchServer search_server("and with"s);
+
+	int id = 0;
+	for (
+		const string& text : {
+			"funny pet and nasty rat"s,
+			"funny pet with curly hair"s,
+			"funny pet and not very nasty rat"s,
+			"pet with rat and rat and rat"s,
+			"nasty rat with curly hair"s,
+		}
+		) {
+		search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, { 1, 2 });
+	}
+
+	const string query = "curly and funny"s;
+
+	auto report = [&search_server, &query] {
+		cout << search_server.GetDocumentCount() << " documents total, "s
+			<< search_server.FindTopDocuments(query).size() << " documents for query ["s << query << "]"s << endl;
+	};
+
+	report();
+	// однопоточная версия
+	search_server.RemoveDocument(5);
+	report();
+	// однопоточная версия
+	search_server.RemoveDocument(execution::seq, 1);
+	report();
+	// многопоточная версия
+	search_server.RemoveDocument(execution::par, 2);
+	report();
+}
+
+void RemoveDocumentExecutSpeedTest() {
+#define TEST(mode) Test(#mode, search_server, execution::mode)
+
+	mt19937 generator;
+
+	const auto dictionary = GenerateDictionary(generator, 10000, 25);
+	const auto documents = GenerateQueries(generator, dictionary, 10000, 100);
+
+	SearchServer search_server(dictionary[0]);
+	for (size_t i = 0; i < documents.size(); ++i) {
+		search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, { 1, 2, 3 });
+	}
+
+	TEST(seq);
+	TEST(par);
+}
 
 void MatchDocumentExecutTest() {
 	using namespace std;
@@ -275,29 +285,6 @@ void MatchDocumentExecutTest() {
 	}
 }
 
-string GenerateQuery(mt19937& generator, const vector<string>& dictionary, int word_count, double minus_prob = 0) {
-	string query;
-	for (int i = 0; i < word_count; ++i) {
-		if (!query.empty()) {
-			query.push_back(' ');
-		}
-		if (uniform_real_distribution<>(0, 1)(generator) < minus_prob) {
-			query.push_back('-');
-		}
-		query += dictionary[uniform_int_distribution<int>(0, dictionary.size() - 1)(generator)];
-	}
-	return query;
-}
-
-vector<string> GenerateQueries(mt19937& generator, const vector<string>& dictionary, int query_count, int max_word_count) {
-	vector<string> queries;
-	queries.reserve(query_count);
-	for (int i = 0; i < query_count; ++i) {
-		queries.push_back(GenerateQuery(generator, dictionary, max_word_count));
-	}
-	return queries;
-}
-
 template <typename ExecutionPolicy>
 void Test(string_view mark, SearchServer search_server, const string& query, ExecutionPolicy&& policy) {
 	LOG_DURATION("mark");
@@ -315,10 +302,10 @@ void MatchDocumentExecutSpeedTest() {
 
 	mt19937 generator;
 
-	const auto dictionary = GenerateDictionary(generator, 1000, 10);
-	const auto documents = GenerateQueries(generator, dictionary, 10'000, 70);
+	const auto dictionary = GenerateDictionary(generator, 100, 10);
+	const auto documents = GenerateQueries(generator, dictionary, 100, 70);
 
-	const string query = GenerateQuery(generator, dictionary, 500, 0.1);
+	const string query = GenerateQueryDouble(generator, dictionary, 500, 0.1);
 
 	SearchServer search_server(dictionary[0]);
 	for (size_t i = 0; i < documents.size(); ++i) {
