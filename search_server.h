@@ -41,8 +41,8 @@ public:
 	}
 
 	std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string& raw_query, int document_id) const;
-	std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(std::execution::sequenced_policy, const std::string& raw_query, int document_id) const;
-	std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(std::execution::parallel_policy, const std::string& raw_query, int document_id) const;
+	template <typename ExecutionPolicy>
+	std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(ExecutionPolicy&& policy, const std::string& raw_query, int document_id) const;
 
 	int GetDocumentCount() const {
 		return documents_.size();
@@ -65,9 +65,9 @@ public:
 	}
 
 	void RemoveDocument(int document_id);
-	void RemoveDocument(std::execution::sequenced_policy, int document_id);
-	void RemoveDocument(std::execution::parallel_policy, int document_id);
 
+	template <typename ExecutionPolicy>
+	void RemoveDocument(ExecutionPolicy&& policy, int document_id);
 
 private:
 	struct DocumentData {
@@ -168,4 +168,55 @@ std::vector<Document> SearchServer::FindAllDocuments(const Query& query, Documen
 		matched_documents.push_back({ document_id, relevance, documents_.at(document_id).rating });
 	}
 	return matched_documents;
+}
+
+template <typename ExecutionPolicy>
+std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument(ExecutionPolicy&& policy, const std::string& raw_query, int document_id) const {
+	const auto query = ParseQuery(raw_query);
+
+	std::vector<std::string> matched_words/*(word_to_document_freqs_.size())*/;
+	std::transform(policy, query.plus_words.begin(), query.plus_words.end(), matched_words.begin(),
+		[&](const std::string& word) {
+			return word;
+		}
+	);
+
+	/*std::vector<std::string> matched_words;
+	for (const std::string& word : query.plus_words) {
+		if (word_to_document_freqs_.count(word) == 0) {
+			continue;
+		}
+		if (word_to_document_freqs_.at(word).count(document_id)) {
+			matched_words.push_back(word);
+		}
+	}*/
+	for (const std::string& word : query.minus_words) {
+		if (word_to_document_freqs_.count(word) == 0) {
+			continue;
+		}
+		if (word_to_document_freqs_.at(word).count(document_id)) {
+			matched_words.clear();
+			break;
+		}
+	}
+	return { matched_words, documents_.at(document_id).status };
+}
+
+
+template <typename ExecutionPolicy>
+void  SearchServer::RemoveDocument(ExecutionPolicy&& policy, int document_id) {
+
+	if (!std::binary_search(document_ids_.begin(), document_ids_.end(), document_id)) {
+		return;
+	}
+
+	std::for_each(policy, word_to_document_freqs_.begin(), word_to_document_freqs_.end(),
+		[document_id](auto& docs_freqs) {
+			docs_freqs.second.erase(document_id);
+		}
+	);
+
+	id_to_word_freqs_.erase(document_id);
+	documents_.erase(document_id);
+	document_ids_.erase(document_id);
 }

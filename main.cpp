@@ -15,8 +15,8 @@ int main() {
 	//RemoveDocumentExecutTest();
 	//RemoveDocumentExecutSpeedTest();
 
-	MatchDocumentExecutTest();
-	MatchDocumentExecutSpeedTest();
+//	MatchDocumentExecutTest();
+//	MatchDocumentExecutSpeedTest();
 
 	/*BeginEndTest();
 	GetWordFreqTest();

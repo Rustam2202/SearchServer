@@ -235,8 +235,8 @@ void RemoveDocumentExecutSpeedTest() {
 
 	mt19937 generator;
 
-	const auto dictionary = GenerateDictionary(generator, 10000, 25);
-	const auto documents = GenerateQueries(generator, dictionary, 10000, 100);
+	const auto dictionary = GenerateDictionary(generator, 5000, 25); // 10k
+	const auto documents = GenerateQueries(generator, dictionary, 5000, 100); //10k
 
 	SearchServer search_server(dictionary[0]);
 	for (size_t i = 0; i < documents.size(); ++i) {
@@ -298,12 +298,12 @@ void Test(string_view mark, SearchServer search_server, const string& query, Exe
 }
 
 void MatchDocumentExecutSpeedTest() {
-#define TEST(policy) Test(#policy, search_server, query, execution::policy)
+#define TEST2(policy) Test(#policy, search_server, query, execution::policy)
 
 	mt19937 generator;
 
-	const auto dictionary = GenerateDictionary(generator, 100, 10);
-	const auto documents = GenerateQueries(generator, dictionary, 100, 70);
+	const auto dictionary = GenerateDictionary(generator, 1000, 10);
+	const auto documents = GenerateQueries(generator, dictionary, 10000, 70);
 
 	const string query = GenerateQueryDouble(generator, dictionary, 500, 0.1);
 
@@ -312,8 +312,8 @@ void MatchDocumentExecutSpeedTest() {
 		search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, { 1, 2, 3 });
 	}
 
-	TEST(seq);
-	TEST(par);
+	TEST2(seq);
+	TEST2(par);
 }
 
 
