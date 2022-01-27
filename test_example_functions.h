@@ -7,13 +7,12 @@
 
 void RemoveDocumentExecutTest();
 void RemoveDocumentExecutSpeedTest();
-//
-//
-//void ProcessQueriesTest();
-//void ProcessQueriesSpeedTest();
-//
-//void ProcessQueriesJoinedTest();
-//void ProcessQueriesJoinedSpeedTest();
+
+void ProcessQueriesTest();
+void ProcessQueriesSpeedTest();
+
+void ProcessQueriesJoinedTest();
+void ProcessQueriesJoinedSpeedTest();
 
 void MatchDocumentExecutTest();
 void MatchDocumentExecutSpeedTest();

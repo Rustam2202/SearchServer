@@ -71,7 +71,7 @@ vector<string> GenerateQueries(mt19937& generator, const vector<string>& diction
 }
 
 template <typename QueriesProcessor>
-void Test(string_view mark, QueriesProcessor processor, const SearchServer& search_server, const vector<string>& queries) {
+void Test1(string_view mark, QueriesProcessor processor, const SearchServer& search_server, const vector<string>& queries) {
 	LOG_DURATION("mark");
 	const auto documents_lists = processor(search_server, queries);
 }
@@ -107,7 +107,7 @@ void ProcessQueriesTest() {
 
 void ProcessQueriesSpeedTest() {
 
-#define TEST(processor) Test(#processor, processor, search_server, queries)
+#define TEST1(processor) Test1(#processor, processor, search_server, queries)
 
 	//int main() 
 	{
@@ -121,7 +121,7 @@ void ProcessQueriesSpeedTest() {
 		}
 
 		const auto queries = GenerateQueries(generator, dictionary, 10'000, 7);
-		TEST(ProcessQueries);
+		TEST1(ProcessQueries);
 	}
 }
 
@@ -178,11 +178,11 @@ void ProcessQueriesJoinedSpeedTest() {
 	}
 
 	const auto queries = GenerateQueries(generator, dictionary, 10'000, 7);
-	TEST(ProcessQueriesJoined);
+	TEST1(ProcessQueriesJoined);
 }
 
 template <typename ExecutionPolicy>
-void Test(string_view mark, SearchServer search_server, ExecutionPolicy&& policy) {
+void Test3(string_view mark, SearchServer search_server, ExecutionPolicy&& policy) {
 	LOG_DURATION("mark");
 	const int document_count = search_server.GetDocumentCount();
 	for (int id = 0; id < document_count; ++id) {
@@ -231,7 +231,7 @@ void RemoveDocumentExecutTest() {
 }
 
 void RemoveDocumentExecutSpeedTest() {
-#define TEST(mode) Test(#mode, search_server, execution::mode)
+#define TEST3(mode) Test3(#mode, search_server, execution::mode)
 
 	mt19937 generator;
 
@@ -243,8 +243,8 @@ void RemoveDocumentExecutSpeedTest() {
 		search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, { 1, 2, 3 });
 	}
 
-	TEST(seq);
-	TEST(par);
+	TEST3(seq);
+	TEST3(par);
 }
 
 void MatchDocumentExecutTest() {
@@ -286,7 +286,7 @@ void MatchDocumentExecutTest() {
 }
 
 template <typename ExecutionPolicy>
-void Test(string_view mark, SearchServer search_server, const string& query, ExecutionPolicy&& policy) {
+void Test4(string_view mark, SearchServer search_server, const string& query, ExecutionPolicy&& policy) {
 	LOG_DURATION("mark");
 	const int document_count = search_server.GetDocumentCount();
 	int word_count = 0;
@@ -298,7 +298,7 @@ void Test(string_view mark, SearchServer search_server, const string& query, Exe
 }
 
 void MatchDocumentExecutSpeedTest() {
-#define TEST2(policy) Test(#policy, search_server, query, execution::policy)
+#define TEST4(policy) Test4(#policy, search_server, query, execution::policy)
 
 	mt19937 generator;
 
@@ -312,8 +312,8 @@ void MatchDocumentExecutSpeedTest() {
 		search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, { 1, 2, 3 });
 	}
 
-	TEST2(seq);
-	TEST2(par);
+	TEST4(seq);
+	TEST4(par);
 }
 
 
