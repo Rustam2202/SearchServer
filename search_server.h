@@ -205,32 +205,12 @@ std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument
 
 template <typename ExecutionPolicy>
 void  SearchServer::RemoveDocument(ExecutionPolicy&& policy, int document_id) {
-	using namespace std;
 
-	/*if (!std::binary_search(document_ids_.begin(), document_ids_.end(), document_id)) {
+	if (!document_ids_.count(document_id)) {
 		return;
-	}*/
+	}
 
-	/*std::vector<std::pair<std::string, std::map<int, double>>> temp;
-	for (auto&& doc : word_to_document_freqs_) {
-		temp.push_back(std::move(doc));
-	}*/
-
-	
-	/*std::vector<std::pair<std::string, std::map<int, double>>> temp(word_to_document_freqs_.size());
-	std::transform(std::execution::par, std::make_move_iterator(word_to_document_freqs_.begin()), std::make_move_iterator(word_to_document_freqs_.end()), std::make_move_iterator(temp.begin()),
-		[&](const auto& doc) {
-			return doc;
-		}
-	);*/
-
-	//map<int,double>* a= &word_to_document_freqs_["curly"]; // указатель на map<int,double>
-	//keys.push_back(&word_to_document_freqs_["curly"]);
-	//auto b = &word_to_document_freqs_; // указатель на весь map
-	//map<string,map<int,double>>* c = &word_to_document_freqs_;
-	//auto d = c + 1;
-
-	vector<map<int, double>*> keys(word_to_document_freqs_.size());
+	std::vector<std::map<int, double>*> keys(word_to_document_freqs_.size());
 	std::transform(std::execution::par, word_to_document_freqs_.begin(), word_to_document_freqs_.end(), keys.begin(),
 		[](auto& doc) {
 			return &doc.second;
@@ -242,26 +222,6 @@ void  SearchServer::RemoveDocument(ExecutionPolicy&& policy, int document_id) {
 			(*key).erase(document_id);
 		}
 	);
-
-	/*vector<map<int, double>*> keys;
-	for_each(std::execution::seq, word_to_document_freqs_.begin(), word_to_document_freqs_.end(),
-		[&keys](pair<string, map<int, double>> doc) {
-			keys.push_back(&doc.second);
-		}
-	);*/
-
-	
-	/*std::for_each(policy, temp.begin(), temp.end(),
-		[document_id](auto& docs_freqs) {
-			docs_freqs.second.erase(document_id);
-		}
-	);*/
-
-	/*std::for_each(std::execution::par, temp.begin(), temp.end(),
-		[&](auto& doc) {
-			word_to_document_freqs_[doc.first] = doc.second;
-		}
-	);*/
 
 	id_to_word_freqs_.erase(document_id);
 	documents_.erase(document_id);
