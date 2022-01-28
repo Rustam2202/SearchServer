@@ -235,15 +235,15 @@ void RemoveDocumentExecutSpeedTest() {
 
 	mt19937 generator;
 
-	const auto dictionary = GenerateDictionary(generator, 5000, 25); // 10k
-	const auto documents = GenerateQueries(generator, dictionary, 5000, 100); //10k
+	const auto dictionary = GenerateDictionary(generator, 10000, 25); // 10k
+	const auto documents = GenerateQueries(generator, dictionary, 10000, 100); //10k
 
 	SearchServer search_server(dictionary[0]);
 	for (size_t i = 0; i < documents.size(); ++i) {
 		search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, { 1, 2, 3 });
 	}
 
-	TEST3(seq);
+	//TEST3(seq);
 	TEST3(par);
 }
 
