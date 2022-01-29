@@ -27,10 +27,10 @@ void SearchServer::AddDocument(int document_id, const std::string_view& document
 	const auto words = SplitIntoWordsNoStop(document);
 
 	const double inv_word_count = 1.0 / words.size();
-	for (const std::string& word : words) {
+	/*for (const std::string& word : words) {
 		word_to_document_freqs_[word][document_id] += inv_word_count;
 		id_to_word_freqs_[document_id][word] += inv_word_count;
-	}
+	}*/
 	documents_.emplace(document_id, DocumentData{ ComputeAverageRating(ratings), status });
 	document_ids_.insert(document_id);
 }
@@ -50,6 +50,32 @@ std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument
 	const auto query = ParseQuery(raw_query);
 
 	std::vector<std::string> matched_words;
+	for (const std::string& word : query.plus_words) {
+		if (word_to_document_freqs_.count(word) == 0) {
+			continue;
+		}
+		if (word_to_document_freqs_.at(word).count(document_id)) {
+			matched_words.push_back(word);
+		}
+	}
+	for (const std::string& word : query.minus_words) {
+		if (word_to_document_freqs_.count(word) == 0) {
+			continue;
+		}
+		if (word_to_document_freqs_.at(word).count(document_id)) {
+			matched_words.clear();
+			break;
+		}
+	}
+	return { matched_words, documents_.at(document_id).status };
+}
+
+std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDocument(std::string_view raw_query, int document_id) const {
+
+	std::string s_raw_query{ raw_query };
+	const auto query = ParseQuery(s_raw_query);
+
+	std::vector<std::string_view> matched_words;
 	for (const std::string& word : query.plus_words) {
 		if (word_to_document_freqs_.count(word) == 0) {
 			continue;

@@ -6,14 +6,14 @@
 
 int main() {
 	using namespace std;
-	//ProcessQueriesTest();
+	ProcessQueriesTest();
 	//ProcessQueriesSpeedTest();
 
-//	ProcessQueriesJoinedTest();
+	ProcessQueriesJoinedTest();
 //	ProcessQueriesJoinedSpeedTest();
 
 	RemoveDocumentExecutTest();
-	RemoveDocumentExecutSpeedTest();
+//	RemoveDocumentExecutSpeedTest();
 
 //	MatchDocumentExecutTest();
 //	MatchDocumentExecutSpeedTest();
