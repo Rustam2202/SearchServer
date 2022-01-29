@@ -12,7 +12,7 @@ int main() {
 //	ProcessQueriesJoinedTest();
 //	ProcessQueriesJoinedSpeedTest();
 
-	//RemoveDocumentExecutTest();
+	RemoveDocumentExecutTest();
 	RemoveDocumentExecutSpeedTest();
 
 //	MatchDocumentExecutTest();

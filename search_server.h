@@ -18,16 +18,21 @@ class SearchServer {
 public:
 	template <typename StringContainer>
 	explicit SearchServer(const StringContainer& stop_words)
-		: stop_words_(MakeUniqueNonEmptyStrings(stop_words)) {
-		if (!all_of(stop_words_.begin(), stop_words_.end(), IsValidWord)) {
+		/*: stop_words_(MakeUniqueNonEmptyStrings(stop_words))*/ {
+		/*if (!all_of(stop_words_.begin(), stop_words_.end(), IsValidWord)) {
 			throw std::invalid_argument("Some of stop words are invalid");
-		}
+		}*/
 	}
 
 	explicit SearchServer(const std::string& stop_words_text)
 		: SearchServer(SplitIntoWords(stop_words_text)) {}
 
+	explicit SearchServer(const std::string_view& stop_words_text)
+		: SearchServer(SplitIntoWords(stop_words_text)) {}
+
 	void AddDocument(int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings);
+
+	void AddDocument(int document_id, const std::string_view& document, DocumentStatus status, const std::vector<int>& ratings);
 
 	template <typename DocumentPredicate>
 	std::vector<Document> FindTopDocuments(const std::string& raw_query, DocumentPredicate document_predicate) const;
@@ -74,7 +79,7 @@ private:
 		int rating;
 		DocumentStatus status;
 	};
-	const std::set<std::string> stop_words_;
+	const std::set<std::string, std::less<>> stop_words_;
 	std::map<std::string, std::map<int, double>> word_to_document_freqs_;
 	std::map<int, std::map<std::string, double>> id_to_word_freqs_;
 	std::map<int, DocumentData> documents_;
@@ -90,13 +95,25 @@ private:
 		return stop_words_.count(word) > 0;
 	}
 
+	bool IsStopWord(const std::string_view& word) const {
+		return stop_words_.count(word) > 0;
+	}
+
 	static bool IsValidWord(const std::string& word) {
 		return none_of(word.begin(), word.end(), [](char c) {
 			return c >= '\0' && c < ' ';
 			});
 	}
 
+	static bool IsValidWord(const std::string_view& word) {
+		return none_of(word.begin(), word.end(), [](char c) {
+			return c >= '\0' && c < ' ';
+			});
+	}
+
 	std::vector<std::string> SplitIntoWordsNoStop(const std::string& text) const;
+
+	std::vector<std::string_view> SplitIntoWordsNoStop(const std::string_view& text) const;
 
 	struct Query {
 		std::set<std::string> plus_words;
@@ -210,7 +227,57 @@ void  SearchServer::RemoveDocument(ExecutionPolicy&& policy, int document_id) {
 		return;
 	}
 
-	std::vector<std::map<int, double>*> keys(word_to_document_freqs_.size());
+	/*auto it_doc = id_to_word_freqs_.find(document_id);
+
+	std::vector<map<std::string, std::map<int, double>>::iterator> its_word_to_doc_freq(it_doc->second.size());
+
+	std::transform(std::execution::par, it_doc->second.begin(), it_doc->second.end(), its_word_to_doc_freq.begin(),
+		[&](auto& word_freqs) {
+			return word_to_document_freqs_.find(word_freqs.first);
+		});
+
+	std::for_each(std::execution::par, its_word_to_doc_freq.begin(), its_word_to_doc_freq.end(),
+		[&](auto& word_docs_freq) {
+			word_docs_freq->second.erase(document_id);
+		});*/
+
+	auto it_doc = id_to_word_freqs_.find(document_id);
+	using namespace std;
+	vector<map<string, map<int, double>>::iterator> its_word_to_doc_freq;
+	its_word_to_doc_freq.reserve(it_doc->second.size());
+
+	for_each(execution::par, it_doc->second.begin(), it_doc->second.end(),
+		[&](auto& word_freqs) {
+			its_word_to_doc_freq.push_back(word_to_document_freqs_.find(word_freqs.first));
+		});
+
+	for_each(execution::par, its_word_to_doc_freq.begin(), its_word_to_doc_freq.end(),
+		[&](auto& word_docs_freq) {
+			word_docs_freq->second.erase(document_id);
+		});
+
+
+	//std::vector<std::map<std::string, double>*> keys(id_to_word_freqs_.size());
+	//std::transform(std::execution::par, id_to_word_freqs_.begin(), id_to_word_freqs_.end(), keys.begin(),
+	//	[](auto& doc) {
+	//		return &doc.second;
+	//	}
+	//);
+
+	//std::for_each(policy, keys.begin(), keys.end(),	[&](auto& key) {
+	//		//auto a = (*key).begin();
+	//		/*std::for_each(policy, (*key).begin(), (*key).end(), [&](auto& word) {
+	//			word_to_document_freqs_.at(word).erase(document_id);
+	//			}
+	//		);*/
+	//		
+	//		/*for (auto [word, _] : *key) {
+	//			word_to_document_freqs_.at(word).erase(document_id);
+	//		}*/
+	//	}
+	//);
+
+	/*std::vector<std::map<int, double>*> keys(word_to_document_freqs_.size());
 	std::transform(std::execution::par, word_to_document_freqs_.begin(), word_to_document_freqs_.end(), keys.begin(),
 		[](auto& doc) {
 			return &doc.second;
@@ -221,7 +288,7 @@ void  SearchServer::RemoveDocument(ExecutionPolicy&& policy, int document_id) {
 		[document_id](auto& key) {
 			(*key).erase(document_id);
 		}
-	);
+	);*/
 
 	id_to_word_freqs_.erase(document_id);
 	documents_.erase(document_id);

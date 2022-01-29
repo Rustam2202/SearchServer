@@ -20,6 +20,21 @@ void SearchServer::AddDocument(int document_id, const std::string& document, Doc
 	document_ids_.insert(document_id);
 }
 
+void SearchServer::AddDocument(int document_id, const std::string_view& document, DocumentStatus status, const std::vector<int>& ratings) {
+	if ((document_id < 0) || (documents_.count(document_id) > 0)) {
+		throw std::invalid_argument("Invalid document_id");
+	}
+	const auto words = SplitIntoWordsNoStop(document);
+
+	const double inv_word_count = 1.0 / words.size();
+	for (const std::string& word : words) {
+		word_to_document_freqs_[word][document_id] += inv_word_count;
+		id_to_word_freqs_[document_id][word] += inv_word_count;
+	}
+	documents_.emplace(document_id, DocumentData{ ComputeAverageRating(ratings), status });
+	document_ids_.insert(document_id);
+}
+
 int SearchServer::ComputeAverageRating(const std::vector<int>& ratings) {
 	if (ratings.empty()) {
 		return 0;
@@ -122,6 +137,19 @@ std::vector<std::string> SearchServer::SplitIntoWordsNoStop(const std::string& t
 	for (const std::string& word : SplitIntoWords(text)) {
 		if (!IsValidWord(word)) {
 			throw std::invalid_argument("Word " + word + " is invalid");
+		}
+		if (!IsStopWord(word)) {
+			words.push_back(word);
+		}
+	}
+	return words;
+}
+
+std::vector<std::string_view> SearchServer::SplitIntoWordsNoStop(const std::string_view& text) const {
+	std::vector<std::string_view> words;
+	for (const std::string_view& word : SplitIntoWords(text)) {
+		if (!IsValidWord(word)) {
+			throw std::invalid_argument("Word is invalid");
 		}
 		if (!IsStopWord(word)) {
 			words.push_back(word);
