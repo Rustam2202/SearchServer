@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iterator>
 #include <execution>
+#include <stdexcept>
 
 
 void SearchServer::AddDocument(int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings) {
@@ -47,9 +48,16 @@ int SearchServer::ComputeAverageRating(const std::vector<int>& ratings) {
 }
 
 std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument(const std::string& raw_query, int document_id) const {
+	if (document_id < 0 || documents_.count(document_id) == 0) {
+		throw std::out_of_range("Invalid document_id");
+	}
+	if (!IsValidWord(raw_query)) {
+		throw std::invalid_argument("Invalid query");
+	}
 	const auto query = ParseQuery(raw_query);
 
 	std::vector<std::string> matched_words;
+
 	for (const std::string& word : query.plus_words) {
 		if (word_to_document_freqs_.count(word) == 0) {
 			continue;
@@ -58,6 +66,7 @@ std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument
 			matched_words.push_back(word);
 		}
 	}
+
 	for (const std::string& word : query.minus_words) {
 		if (word_to_document_freqs_.count(word) == 0) {
 			continue;
@@ -67,6 +76,7 @@ std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument
 			break;
 		}
 	}
+
 	return { matched_words, documents_.at(document_id).status };
 }
 
@@ -114,20 +124,6 @@ SearchServer::QueryWord SearchServer::ParseQueryWord(const std::string& text) co
 
 SearchServer::Query SearchServer::ParseQuery(const std::string& text) const {
 	Query result;
-	
-	/*auto words = SplitIntoWords(text);
-	std::for_each(std::execution::par, words.begin(), words.end(), [&](const std::string& word) {
-		const auto query_word = ParseQueryWord(word);
-		if (!query_word.is_stop) {
-			if (query_word.is_minus) {
-				result.minus_words.insert(query_word.data);
-			}
-			else {
-				result.plus_words.insert(query_word.data);
-			}
-		}
-		}
-	);*/
 
 	for (const std::string& word : SplitIntoWords(text)) {
 		const auto query_word = ParseQueryWord(word);
