@@ -18,7 +18,7 @@ class SearchServer {
 public:
 	template <typename StringContainer>
 	explicit SearchServer(const StringContainer& stop_words)
-		/*: stop_words_(MakeUniqueNonEmptyStrings(stop_words))*/ {
+		: stop_words_(MakeUniqueNonEmptyStrings(stop_words)) {
 		/*if (!all_of(stop_words_.begin(), stop_words_.end(), IsValidWord)) {
 			throw std::invalid_argument("Some of stop words are invalid");
 		}*/
@@ -47,7 +47,7 @@ public:
 
 	std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string& raw_query, int document_id) const;
 
-	std::tuple<std::vector<std::string_view>, DocumentStatus> MatchDocument(std::string_view raw_query, int document_id) const;
+	//std::tuple<std::vector<std::string_view>, DocumentStatus> MatchDocument(std::string_view raw_query, int document_id) const;
 
 	template <typename ExecutionPolicy>
 	std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(ExecutionPolicy&& policy, const std::string& raw_query, int document_id) const;
