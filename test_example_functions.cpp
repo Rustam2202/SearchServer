@@ -13,12 +13,12 @@
 using namespace std;
 
 void StringViewTest() {
+	string_view stop_words = { "and with" };
 
-
-	SearchServer search_server("and with"s);
+	SearchServer search_server(stop_words);
 	int id = 0;
 	for (
-		const string& text : {
+		const string_view text : {
 			"funny pet and nasty rat"s,
 			"funny pet with curly hair"s,
 			"funny pet and not very nasty rat"s,
@@ -27,6 +27,30 @@ void StringViewTest() {
 		}
 		) {
 		search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, { 1, 2 });
+	}
+	const char char_text[] = { "curly rat" };
+	search_server.AddDocument(6, char_text, DocumentStatus::ACTUAL, { 1, 2 });
+	const std::string string_text{ "pet hair" };
+	search_server.AddDocument(7, string_text, DocumentStatus::ACTUAL, { 1, 2 });
+
+	const string_view query = "curly and funny -not";
+
+	{
+		const auto [words, status] = search_server.MatchDocument(query, 1);
+		cout << words.size() << " words for document 1"s << endl;
+		// 1 words for document 1
+	}
+
+	{
+		const auto [words, status] = search_server.MatchDocument(execution::seq, query, 2);
+		cout << words.size() << " words for document 2"s << endl;
+		// 2 words for document 2
+	}
+
+	{
+		const auto [words, status] = search_server.MatchDocument(execution::par, query, 3);
+		cout << words.size() << " words for document 3"s << endl;
+		// 0 words for document 3
 	}
 }
 

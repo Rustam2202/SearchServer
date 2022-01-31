@@ -6,7 +6,7 @@
 
 int main() {
 	using namespace std;
-//	ProcessQueriesTest();
+	//ProcessQueriesTest();
 	//ProcessQueriesSpeedTest();
 
 //	ProcessQueriesJoinedTest();
@@ -16,7 +16,9 @@ int main() {
 //	RemoveDocumentExecutSpeedTest();
 
 	MatchDocumentExecutTest();
-	MatchDocumentExecutSpeedTest();
+//	MatchDocumentExecutSpeedTest();
+
+	//StringViewTest();
 
 	/*BeginEndTest();
 	GetWordFreqTest();
