@@ -406,9 +406,10 @@ void Test5(string_view mark, const SearchServer& search_server, const vector<str
 	LOG_DURATION("mark");
 	double total_relevance = 0;
 	for (const string_view query : queries) {
-		for (const auto& document : search_server.FindTopDocuments(policy, query)) {
+		//search_server.FindTopDocuments(policy, query);//
+		/*for (const auto& document : search_server.FindTopDocuments(policy, query)) {
 			total_relevance += document.relevance;
-		}
+		}*/
 	}
 	cout << total_relevance << endl;
 }
