@@ -34,6 +34,15 @@ public:
 
 	void AddDocument(int document_id, const std::string_view document, DocumentStatus status, const std::vector<int>& ratings);
 
+	template <typename DocumentPredicate, typename ExecutionPolicy>
+	std::vector<Document> FindTopDocuments(ExecutionPolicy&& policy, const std::string_view& raw_query, DocumentPredicate document_predicate);
+
+	template <typename ExecutionPolicy>
+	std::vector<Document> FindTopDocuments(ExecutionPolicy&& policy, const std::string_view& raw_query, DocumentStatus status) /*const*/;
+
+	template <typename ExecutionPolicy>
+	std::vector<Document> FindTopDocuments(ExecutionPolicy&& policy, /*const*/ std::string_view& raw_query) /*const*/;
+
 	template <typename DocumentPredicate>
 	std::vector<Document> FindTopDocuments(const std::string_view& raw_query, DocumentPredicate document_predicate) const;
 	std::vector<Document> FindTopDocuments(const std::string_view& raw_query, DocumentStatus status) const {
@@ -44,6 +53,7 @@ public:
 	std::vector<Document> FindTopDocuments(const std::string& raw_query) const {
 		return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
 	}
+	
 
 	//std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string& raw_query, int document_id) const;
 
@@ -144,6 +154,39 @@ private:
 	std::vector<Document> FindAllDocuments(const Query& query, DocumentPredicate document_predicate) const;
 };
 
+template <typename DocumentPredicate, typename ExecutionPolicy>
+std::vector<Document> SearchServer::FindTopDocuments(ExecutionPolicy&& policy, const std::string_view& raw_query, DocumentPredicate document_predicate) {
+	const auto query = ParseQuery(raw_query);
+
+	auto matched_documents = SearchServer::FindAllDocuments(query, document_predicate);
+
+	sort(matched_documents.begin(), matched_documents.end(), [](const Document& lhs, const Document& rhs) {
+		if (std::abs(lhs.relevance - rhs.relevance) < 1e-6) {
+			return lhs.rating > rhs.rating;
+		}
+		else {
+			return lhs.relevance > rhs.relevance;
+		}
+		});
+	if (matched_documents.size() > MAX_RESULT_DOCUMENT_COUNT) {
+		matched_documents.resize(MAX_RESULT_DOCUMENT_COUNT);
+	}
+
+	return matched_documents;
+}
+
+template <typename ExecutionPolicy>
+std::vector<Document> SearchServer::FindTopDocuments(ExecutionPolicy&& policy, const std::string_view& raw_query, DocumentStatus status) /*const*/ {
+	return FindTopDocuments(raw_query, [status](int document_id, DocumentStatus document_status, int rating) {
+		return document_status == status;
+		});
+}
+
+template <typename ExecutionPolicy>
+std::vector<Document> SearchServer::FindTopDocuments(ExecutionPolicy&& policy, std::string_view& raw_query) /*const*/ {
+	return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
+}
+
 template <typename DocumentPredicate>
 std::vector<Document> SearchServer::FindTopDocuments(const std::string_view& raw_query, DocumentPredicate document_predicate) const {
 	const auto query = ParseQuery(raw_query);
@@ -229,6 +272,7 @@ std::vector<Document> SearchServer::FindAllDocuments(const Query& query, Documen
 	return matched_documents;
 }
 
+
 template <typename ExecutionPolicy>
 std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDocument(ExecutionPolicy&& policy, const std::string_view& raw_query, int document_id) const {
 	if (document_id < 0 || documents_.count(document_id) == 0) {
@@ -286,7 +330,6 @@ std::tuple<std::vector<std::string_view>, DocumentStatus> SearchServer::MatchDoc
 
 	return { matched_words, documents_.at(document_id).status };
 }
-
 
 template <typename ExecutionPolicy>
 void  SearchServer::RemoveDocument(ExecutionPolicy&& policy, int document_id) {

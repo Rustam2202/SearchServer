@@ -19,6 +19,9 @@ void ProcessQueriesJoinedSpeedTest();
 void MatchDocumentExecutTest();
 void MatchDocumentExecutSpeedTest();
 
+void FindTopDocumentsTest();
+void FindTopDocumentsSpeedTest();
+
 
 //void BeginEndTest();
 //void GetWordFreqTest();

@@ -6,25 +6,28 @@
 
 int main() {
 	using namespace std;
-	//ProcessQueriesTest();
-	//ProcessQueriesSpeedTest();
+	/*ProcessQueriesTest();
+	ProcessQueriesSpeedTest();
 
-//	ProcessQueriesJoinedTest();
-//	ProcessQueriesJoinedSpeedTest();
+	ProcessQueriesJoinedTest();
+	ProcessQueriesJoinedSpeedTest();
 
-//	RemoveDocumentExecutTest();
-//	RemoveDocumentExecutSpeedTest();
+	RemoveDocumentExecutTest();
+	RemoveDocumentExecutSpeedTest();
 
 	MatchDocumentExecutTest();
-//	MatchDocumentExecutSpeedTest();
+	MatchDocumentExecutSpeedTest();*/
 
-	//StringViewTest();
+	FindTopDocumentsTest();
+	FindTopDocumentsSpeedTest();
 
-	/*BeginEndTest();
-	GetWordFreqTest();
-	RemoveDocTest();
-	RemoveDuplicatTest();
-	PaginatorTest();*/
+	//	StringViewTest();
+
+		/*BeginEndTest();
+		GetWordFreqTest();
+		RemoveDocTest();
+		RemoveDuplicatTest();
+		PaginatorTest();*/
 
 	return 0;
 }
