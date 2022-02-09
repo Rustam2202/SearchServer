@@ -34,14 +34,7 @@ public:
 
 	void AddDocument(int document_id, const std::string_view document, DocumentStatus status, const std::vector<int>& ratings);
 
-	template <typename DocumentPredicate, typename ExecutionPolicy>
-	std::vector<Document> FindTopDocuments(ExecutionPolicy&& policy, const std::string_view& raw_query, DocumentPredicate document_predicate);
-
-	template <typename ExecutionPolicy>
-	std::vector<Document> FindTopDocuments(ExecutionPolicy&& policy, const std::string_view& raw_query, DocumentStatus status) /*const*/;
-
-	template <typename ExecutionPolicy>
-	std::vector<Document> FindTopDocuments(ExecutionPolicy&& policy, /*const*/ std::string_view& raw_query) /*const*/;
+	
 
 	template <typename DocumentPredicate>
 	std::vector<Document> FindTopDocuments(const std::string_view& raw_query, DocumentPredicate document_predicate) const;
@@ -54,6 +47,14 @@ public:
 		return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
 	}
 	
+	template <typename ExecutionPolicy, typename DocumentPredicate>
+	std::vector<Document> FindTopDocuments(ExecutionPolicy&& policy, const std::string_view& raw_query, DocumentPredicate document_predicate);
+
+	template <typename ExecutionPolicy>
+	std::vector<Document> FindTopDocuments(ExecutionPolicy&& policy, const std::string_view& raw_query, DocumentStatus status) /*const*/;
+
+	template <typename ExecutionPolicy>
+	std::vector<Document> FindTopDocuments(ExecutionPolicy&& policy, const std::string_view& raw_query) /*const*/;
 
 	//std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string& raw_query, int document_id) const;
 
@@ -154,7 +155,7 @@ private:
 	std::vector<Document> FindAllDocuments(const Query& query, DocumentPredicate document_predicate) const;
 };
 
-template <typename DocumentPredicate, typename ExecutionPolicy>
+template <typename ExecutionPolicy, typename DocumentPredicate>
 std::vector<Document> SearchServer::FindTopDocuments(ExecutionPolicy&& policy, const std::string_view& raw_query, DocumentPredicate document_predicate) {
 	const auto query = ParseQuery(raw_query);
 
@@ -183,7 +184,7 @@ std::vector<Document> SearchServer::FindTopDocuments(ExecutionPolicy&& policy, c
 }
 
 template <typename ExecutionPolicy>
-std::vector<Document> SearchServer::FindTopDocuments(ExecutionPolicy&& policy, std::string_view& raw_query) /*const*/ {
+std::vector<Document> SearchServer::FindTopDocuments(ExecutionPolicy&& policy, const std::string_view& raw_query) /*const*/ {
 	return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
 }
 
