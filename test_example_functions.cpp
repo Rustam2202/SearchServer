@@ -390,7 +390,7 @@ void FindTopDocumentsTest() {
 	}
 	cout << "BANNED:"s << endl;
 	// последовательная версия
-	for (const Document& document : search_server.FindTopDocuments(execution::seq, "curly nasty cat"s, DocumentStatus::BANNED)) {
+	for (const Document& document : search_server.FindTopDocuments(execution::seq, "curly nasty -cat"s, DocumentStatus::BANNED)) {
 		PrintDocument(document);
 	}
 
@@ -407,11 +407,23 @@ void Test5(string_view mark, const SearchServer& search_server, const vector<str
 	double total_relevance = 0;
 	for (const string_view query : queries) {
 		//search_server.FindTopDocuments(policy, query);//
-		/*for (const auto& document : search_server.FindTopDocuments(policy, query)) {
+		for (const auto& document : search_server.FindTopDocuments(policy, query)) {
 			total_relevance += document.relevance;
-		}*/
+		}
 	}
 	cout << total_relevance << endl;
+
+	/*{
+ACTUAL by default:
+	{ document_id = 2, relevance = 0.866434, rating = 1 }
+	{ document_id = 4, relevance = 0.231049, rating = 1 }
+	{ document_id = 1, relevance = 0.173287, rating = 1 }
+	{ document_id = 3, relevance = 0.173287, rating = 1 }
+BANNED:
+	Even ids :
+	{ document_id = 2, relevance = 0.866434, rating = 1 }
+	{ document_id = 4, relevance = 0.231049, rating = 1 } 
+	}*/
 }
 
 void FindTopDocumentsSpeedTest() {
