@@ -5,6 +5,7 @@
 #include <mutex>
 //#include <numeric>
 //#include <string>
+#include <set>
 #include <vector>
 
 using namespace std::string_literals;
@@ -37,6 +38,12 @@ public:
 		return result;
 	}
 
+	void erase(const Key& key) {
+		size_t index = static_cast<uint64_t>(key) % bucket_count_;
+		std::lock_guard guard(value_mutex_[index]);
+		sub_maps_[index].erase(key);
+	}
+
 private:
 	std::vector<std::map<Key, Value>> sub_maps_;
 	std::vector<std::mutex> value_mutex_;
@@ -56,8 +63,8 @@ public:
 
 	Access operator[](const Value& value) {
 		size_t index = static_cast<uint64_t>(value) % bucket_count_;
-		std::set<Value> temp = sub_sets_[index];
-		temp.insert(value);
+		//std::set<Value> temp = sub_sets_[index];
+		//temp.insert(value);
 		return Access{ sub_sets_[index], value, mutexes_[index] };
 	}
 
@@ -69,6 +76,12 @@ public:
 			result.merge(sub_sets_[i]);
 		}
 		return result;
+	}
+
+	void insert(Value& value) {
+		size_t index = static_cast<uint64_t>(value) % bucket_count_;
+		std::lock_guard guard(mutexes_[index]);
+		sub_sets_[index].insert(value);
 	}
 
 private:

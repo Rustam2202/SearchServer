@@ -1,9 +1,9 @@
 #pragma once
 
 #include <chrono>
-//#include <iostream>
+#include <iostream>
 
-#include "search_server.h"
+//#include "search_server.h"
 
 #define PROFILE_CONCAT_INTERNAL(X, Y) X##Y
 #define PROFILE_CONCAT(X, Y) PROFILE_CONCAT_INTERNAL(X, Y)
