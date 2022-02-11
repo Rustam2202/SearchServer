@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cmath>
 #include <execution>
+#include <future>
 #include <map>
 #include <set>
 #include <stdexcept>
@@ -288,19 +289,43 @@ std::vector<Document> SearchServer::FindAllDocuments(ExecutionPolicy&& policy, c
 	ConcurrentMap<int, double> document_to_relevance(5);
 	ConcurrentSet<int> minus_words(5);
 
-	{
-		LOG_DURATION(" ");
-		std::for_each(policy, query.plus_words.begin(), query.plus_words.end(),
-			[&](const std::string_view& word) {
-				const double inverse_document_freq = ComputeWordInverseDocumentFreq((std::string)word);
-				for (const auto [document_id, term_freq] : word_to_document_freqs_.at((std::string)word)) {
-					const auto& document_data = documents_.at(document_id);
-					if (document_predicate(document_id, document_data.status, document_data.rating)) {
-						document_to_relevance[document_id].ref_to_value += term_freq * inverse_document_freq;
-					}
+
+	/*std::for_each(policy, query.plus_words.begin(), query.plus_words.end(),
+		[&](const std::string_view& word) {
+			const double inverse_document_freq = ComputeWordInverseDocumentFreq((std::string)word);
+			for (const auto [document_id, term_freq] : word_to_document_freqs_.at((std::string)word)) {
+				const auto& document_data = documents_.at(document_id);
+				if (document_predicate(document_id, document_data.status, document_data.rating)) {
+					document_to_relevance[document_id].ref_to_value += term_freq * inverse_document_freq;
 				}
 			}
-		);
+		}
+	);*/
+
+	static constexpr int PART_COUNT = 5;
+	const auto part_length = query.plus_words.size() / PART_COUNT;
+	auto part_begin = query.plus_words.begin();
+	auto part_end = std::next(part_begin, part_length);
+
+	auto function = [&](const std::string_view& word) {
+		const double inverse_document_freq = ComputeWordInverseDocumentFreq((std::string)word);
+		for (const auto [document_id, term_freq] : word_to_document_freqs_.at((std::string)word)) {
+			const auto& document_data = documents_.at(document_id);
+			if (document_predicate(document_id, document_data.status, document_data.rating)) {
+				document_to_relevance[document_id].ref_to_value += term_freq * inverse_document_freq;
+			}
+		}
+	};
+
+	std::vector<std::future<void>> futures;
+	for (int i = 0;	i < PART_COUNT;	++i,
+		part_begin = part_end, part_end = (i == PART_COUNT - 1 ? query.plus_words.end() : next(part_begin, part_length))) {
+		futures.push_back(std::async([function, part_begin, part_end] {
+			std::for_each(part_begin, part_end, function);
+			}));
+	}
+	for (int i = 0; i < futures.size(); ++i) {
+		futures[i].get();
 	}
 
 	/*for (const std::string_view& word : query.plus_words) {
@@ -315,18 +340,17 @@ std::vector<Document> SearchServer::FindAllDocuments(ExecutionPolicy&& policy, c
 			}
 		}
 	}*/
-	{
-		LOG_DURATION("minus words");
-		std::for_each(policy, query.minus_words.begin(), query.minus_words.end(),
-			[&](const std::string_view& word) {
-				if (word_to_document_freqs_.count((std::string)word) > 0) {
-					for (const auto [document_id, _] : word_to_document_freqs_.at((std::string)word)) {
-						document_to_relevance.erase(document_id);
-					}
+
+	std::for_each(policy, query.minus_words.begin(), query.minus_words.end(),
+		[&](const std::string_view& word) {
+			if (word_to_document_freqs_.count((std::string)word) > 0) {
+				for (const auto [document_id, _] : word_to_document_freqs_.at((std::string)word)) {
+					document_to_relevance.erase(document_id);
 				}
 			}
-		);
-	}
+		}
+	);
+
 
 	/*for (const std::string_view& word : query.minus_words) {
 		if (word_to_document_freqs_.count((std::string)word) == 0) {
@@ -345,12 +369,11 @@ std::vector<Document> SearchServer::FindAllDocuments(ExecutionPolicy&& policy, c
 		}
 	);*/
 
-	{
-		LOG_DURATION("final");
-		for (const auto [document_id, relevance] : document_to_relevance.BuildOrdinaryMap()) {
-			matched_documents.push_back({ document_id, relevance, documents_.at(document_id).rating });
-		}
+
+	for (const auto [document_id, relevance] : document_to_relevance.BuildOrdinaryMap()) {
+		matched_documents.push_back({ document_id, relevance, documents_.at(document_id).rating });
 	}
+
 	return matched_documents;
 }
 
