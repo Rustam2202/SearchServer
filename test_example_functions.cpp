@@ -396,7 +396,7 @@ vector<string> GenerateQueries(mt19937& generator, const vector<string>& diction
 	vector<string> queries;
 	queries.reserve(query_count);
 	for (int i = 0; i < query_count; ++i) {
-		queries.push_back(GenerateQuery(generator, dictionary, max_word_count));
+		queries.push_back(GenerateQuery(generator, dictionary, max_word_count,0.5));
 	}
 	return queries;
 }

@@ -18,7 +18,7 @@ int main() {
 	MatchDocumentExecutTest();
 	MatchDocumentExecutSpeedTest();*/
 
-	FindTopDocumentsTest();
+	//FindTopDocumentsTest();
 	FindTopDocumentsSpeedTest();
 
 	//	StringViewTest();
