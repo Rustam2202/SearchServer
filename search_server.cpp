@@ -219,3 +219,11 @@ std::vector<std::string> SearchServer::SplitIntoWordsNoStop(const std::string_vi
 	return words;
 }
 
+// search_server.cpp
+using namespace std;
+	vector<Document> SearchServer::FindTopDocuments(string_view query) const {
+		return FindTopDocuments(execution::seq, query);
+	}
+	vector<Document> SearchServer::FindTopDocuments(string_view query, DocumentStatus status_query) const {
+		return FindTopDocuments(execution::seq, query, status_query);
+	}
