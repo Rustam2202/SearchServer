@@ -221,10 +221,40 @@ template <typename DocumentPredicate>
 std::vector<Document> SearchServer::FindAllDocuments(const std::execution::parallel_policy&, const Query& query, DocumentPredicate document_predicate) const {
 	// НОВАЯ ПАРАЛЛЕЛЬНАЯ НА FUTURE 
 	ConcurrentMap<int, double> document_to_relevance(100);
-	//
-	//	// plus-words
+
+	// minus-words
+	ConcurrentSet<int> minus_words(100);
 	{
-		static constexpr int PART_COUNT = 16;
+		static constexpr int PART_COUNT = 8;
+		const auto part_length = query.minus_words.size() / PART_COUNT;
+		auto part_begin = query.minus_words.begin();
+		auto part_end = std::next(part_begin, part_length);
+
+		auto function = [&](std::string_view word) {
+			if (word_to_document_freqs_.count(word) > 0) {
+				for (const std::pair<const int, double> doc : (*word_to_document_freqs_.find(word)).second) {
+					minus_words.insert(doc.first);
+				}
+			}
+		};
+
+		std::vector<std::future<void>> futures;
+		for (int i = 0;	i < PART_COUNT;	++i,
+			part_begin = part_end, part_end = (i == PART_COUNT - 1 ? query.minus_words.end() : next(part_begin, part_length))) {
+			futures.push_back(std::async([function, part_begin, part_end] {
+				std::for_each(part_begin, part_end, function);
+				}));
+		}
+		for (int i = 0; i < futures.size(); ++i) {
+			futures[i].get();
+		}
+	}
+	std::set<int> minWords = minus_words.BuildOrdinarySet();
+
+
+	//plus-words
+	{
+		static constexpr int PART_COUNT = 8;
 		const auto part_length = query.plus_words.size() / PART_COUNT;
 		auto part_begin = query.plus_words.begin();
 		auto part_end = std::next(part_begin, part_length);
@@ -232,6 +262,9 @@ std::vector<Document> SearchServer::FindAllDocuments(const std::execution::paral
 		auto function = [&](const std::string_view& word) {
 			const double inverse_document_freq = ComputeWordInverseDocumentFreq(word);
 			for (const auto& [document_id, term_freq] : (*word_to_document_freqs_.find(word)).second) {
+				if (minWords.count(document_id) > 0) {
+					continue;
+				}
 				const auto& document_data = documents_.at(document_id);
 				if (document_predicate(document_id, document_data.status, document_data.rating)) {
 					document_to_relevance[document_id].ref_to_value += term_freq * inverse_document_freq;
@@ -251,7 +284,8 @@ std::vector<Document> SearchServer::FindAllDocuments(const std::execution::paral
 		}
 	}
 
-	{
+
+	/*{
 		static constexpr int PART_COUNT = 8;
 		const auto part_length = query.minus_words.size() / PART_COUNT;
 		auto part_begin = query.minus_words.begin();
@@ -273,7 +307,9 @@ std::vector<Document> SearchServer::FindAllDocuments(const std::execution::paral
 		for (int i = 0; i < futures.size(); ++i) {
 			futures[i].get();
 		}
-	}
+	}*/
+
+
 
 	/*std::for_each(policy, query.minus_words.begin(), query.minus_words.end(),
 		[&](const std::string_view& word) {

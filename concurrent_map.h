@@ -78,7 +78,7 @@ public:
 		return result;
 	}
 
-	void insert(Value& value) {
+	void insert(Value value) {
 		size_t index = static_cast<uint64_t>(value) % bucket_count_;
 		std::lock_guard guard(mutexes_[index]);
 		sub_sets_[index].insert(value);

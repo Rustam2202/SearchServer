@@ -433,7 +433,7 @@ void FindTopDocumentsTest() {
 	}
 	cout << "BANNED:"s << endl;
 	// последовательная версия
-	for (const Document& document : search_server.FindTopDocuments(execution::seq, "curly nasty -cat"s, DocumentStatus::BANNED)) {
+	for (const Document& document : search_server.FindTopDocuments(execution::seq, "curly nasty cat"s, DocumentStatus::BANNED)) {
 		PrintDocument(document);
 	}
 
