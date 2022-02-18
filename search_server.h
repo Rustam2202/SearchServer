@@ -33,7 +33,7 @@ public:
 	explicit SearchServer(const std::string_view& stop_words_text)
 		: SearchServer(SplitIntoWords(stop_words_text)) {}
 
-	void AddDocument(int document_id, const std::string_view document, DocumentStatus status, const std::vector<int>& ratings);
+	void AddDocument(int document_id, std::string_view document, DocumentStatus status, const std::vector<int>& ratings);
 
 	template <typename DocumentPredicate>
 	std::vector<Document> FindTopDocuments(std::string_view query, DocumentPredicate document_predicate) const;
@@ -53,9 +53,9 @@ public:
 
 	std::tuple<std::vector<std::string_view>, DocumentStatus> MatchDocument(std::string_view raw_query, int document_id) const;
 
-	std::tuple<std::vector<std::string_view>, DocumentStatus> MatchDocument(const std::execution::sequenced_policy&, const std::string_view& raw_query, int document_id) const;
+	std::tuple<std::vector<std::string_view>, DocumentStatus> MatchDocument(const std::execution::sequenced_policy&, std::string_view raw_query, int document_id) const;
 
-	std::tuple<std::vector<std::string_view>, DocumentStatus> MatchDocument(const std::execution::parallel_policy&, const std::string_view& raw_query, int document_id) const;
+	std::tuple<std::vector<std::string_view>, DocumentStatus> MatchDocument(const std::execution::parallel_policy&, std::string_view raw_query, int document_id) const;
 
 	int GetDocumentCount() const {
 		return documents_.size();
@@ -110,7 +110,7 @@ private:
 			});
 	}
 
-	std::vector<std::string> SplitIntoWordsNoStop(std::string_view text) const;
+	std::vector<std::string_view> SplitIntoWordsNoStop(std::string_view text) const;
 
 	struct Query {
 		std::set<std::string_view> plus_words;
