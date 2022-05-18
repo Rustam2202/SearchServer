@@ -9,7 +9,7 @@ void SearchServer::AddDocument(int document_id, std::string_view document, Docum
 	if ((document_id < 0) || (documents_.count(document_id) > 0)) {
 		throw std::invalid_argument("Invalid document_id");
 	}
-	const std::vector<std::string_view> words = SplitIntoWordsNoStop(document);
+	const std::vector<std::string> words = SplitIntoWordsNoStop(document);
 
 	const double inv_word_count = 1.0 / words.size();
 	for (const std::string& word : words) {
@@ -182,8 +182,8 @@ void SearchServer::RemoveDocument(int document_id) {
 	document_ids_.erase(document_id);
 }
 
-std::vector<std::string_view> SearchServer::SplitIntoWordsNoStop(std::string_view text) const {
-	std::vector<std::string_view> words;
+std::vector<std::string> SearchServer::SplitIntoWordsNoStop(std::string_view text) const {
+	std::vector<std::string> words;
 	for (const std::string_view& word : SplitIntoWords(text)) {
 		if (!IsValidWord(word)) {
 			throw std::invalid_argument("Word is invalid");

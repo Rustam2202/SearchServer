@@ -110,7 +110,7 @@ private:
 			});
 	}
 
-	std::vector<std::string_view> SplitIntoWordsNoStop(std::string_view text) const;
+	std::vector<std::string> SplitIntoWordsNoStop(std::string_view text) const;
 
 	struct Query {
 		std::set<std::string_view> plus_words;
